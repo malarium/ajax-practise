@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <form class="search-form">
+    <input type="text" class="search" placeholder="City or State">
+    <p id="ilosc">Foud <span class="number">0</span> matching <span class="element">elements</span></p>
+    <ul class="suggestions">
+      <li>Filter for a city</li>
+      <li>or a state</li>
+    </ul>
+  </form>
+<script>
+const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';// tutaj są dane w formacie json - zewntrzne źródło
+
+const cities = [];
+fetch(endpoint) // pobiera dane z adresu
+.then(blob => blob.json()) //zwraca promise z danymi
+.then(data => cities.push(...data));//dopiero teraz promise jest rozwiązany i dane (data) są dostpne jako czytelne obiekty (blob i data to oczywiście zmienne). Można sprawdzić: .then(data => console.log(data));
+// (...data) - to jest spread w ES6 - bez wielokropka w cities byłaby 1 tablica z 1000 elementów - spread usuwa zagnieżdżenie i w cities jest 1000 oddzielnych elementów ,
+
+
+function findMatches(wordToMatch, cities) { //funkcja pobiera to co wprowadził user i całą kolekcj w zmiennej cities
+  return cities.filter(place => { //filtruje przez wszystkie obiekty w cities i każdy przypisuje do zmiennej place
+    const regex = new RegExp(wordToMatch, 'gi');//global, insensitive
+    return place.city.match(regex) ||
+    place.state.match(regex) /*i sprawdza czy tym razem place lub state pasują do filtru regex */
+        })
+  };
+
+
+
+function displayMatches () { //wyświetla wyniki wyszukiwania
+  const matchArray = findMatches(this.value, cities);
+  const html = matchArray.map(place => {
+    return `
+    <li>
+    <span class="name">${place.city}, ${place.state}</span>
+    <span class="population">${place.population}</span>
+    </li>
+    `
+  }).join('');
+  suggestions.innerHTML = html;
+}
+
+function countMatches () { //sam zrobiłem :)))
+  var ilosc = document.getElementsByTagName("li").length;
+  number.innerHTML = ilosc;
+  if (ilosc === 1) {
+    element.innerHTML = "element";
+  } else {
+    element.innerHTML = "elements";
+  }
+}
+
+const searchInput = document.querySelector('.search');
+const suggestions = document.querySelector('.suggestions');
+const number = document.querySelector('.number');
+const element = document.querySelector('.element');
+
+searchInput.addEventListener('keyup', displayMatches); //przy każdej zmianie litery w input uruchamiaj funkcje
+searchInput.addEventListener('keyup', countMatches);
+
+</script>
+  </body>
+</html>
